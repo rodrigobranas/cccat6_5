@@ -27,7 +27,8 @@ insert into ccca.coupon (code, percentage, expire_date) values ('VALE20_EXPIRED'
 
 create table ccca.order (
 	id_order serial,
-	coupon text,
+	coupon_code text,
+	coupon_percentage numeric,
 	code text,
 	cpf text,
 	issue_date timestamp,

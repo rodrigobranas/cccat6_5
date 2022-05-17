@@ -5,3 +5,7 @@ test("Deve criar as dimensões", function () {
 	const volume = dimension.getVolume();
 	expect(volume).toBe(0.03);
 });
+
+test("Deve lançar uma exception se alguma dimensão for negativa", function () {
+	expect(() => new Dimension(-100, -30, -10)).toThrow(new Error("Invalid dimension"));
+});

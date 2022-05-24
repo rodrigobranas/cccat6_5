@@ -1,5 +1,6 @@
 import GetOrders from "../../src/application/GetOrders";
 import PlaceOrder from "../../src/application/PlaceOrder";
+import GetOrdersQuery from "../../src/application/query/GetOrdersQuery";
 import Coupon from "../../src/domain/entity/Coupon";
 import Dimension from "../../src/domain/entity/Dimension";
 import Item from "../../src/domain/entity/Item";
@@ -24,7 +25,7 @@ beforeEach(async function () {
 });
 
 test("Deve obter uma lista vazia de pedidos", async function () {
-	const getOrders = new GetOrders(orderRepository);
+	const getOrders = new GetOrders(repositoryFactory);
 	const output = await getOrders.execute();
 	expect(output).toHaveLength(0);
 });
@@ -49,14 +50,20 @@ test("Deve obter os pedidos cadastrados", async function () {
 	};
 	await placeOrder.execute(input);
 	await placeOrder.execute(input);
-	const getOrders = new GetOrders(orderRepository);
+	const getOrders = new GetOrders(repositoryFactory);
+	console.time("getOrders");
 	const output = await getOrders.execute();
+	console.timeEnd("getOrders");
 	expect(output).toHaveLength(2);
 	const [order1, order2] = output;
 	expect(order1.code).toBe("202100000001");
 	expect(order1.total).toBe(5132);
 	expect(order2.code).toBe("202100000002");
 	expect(order2.total).toBe(5132);
+	const getOrdersQuery = new GetOrdersQuery(connection);
+	console.time("getOrdersQuery");
+	const outputQuery = await getOrdersQuery.execute();
+	console.timeEnd("getOrdersQuery");
 });
 
 afterEach(async function () {

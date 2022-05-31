@@ -9,6 +9,8 @@ import OrderRepository from "../../src/domain/repository/OrderRepository";
 import Connection from "../../src/infra/database/Connection";
 import PgPromiseConnectionAdapter from "../../src/infra/database/PgPromiseConnectionAdapter";
 import DatabaseRepositoryFactory from "../../src/infra/factory/DatabaseRepositoryFactory";
+import MemoryQueueAdapter from "../../src/infra/queue/MemoryQueueAdapter";
+import Queue from "../../src/infra/queue/Queue";
 import OrderRepositoryDatabase from "../../src/infra/repository/database/OrderRepositoryDatabase";
 import CouponRepositoryMemory from "../../src/infra/repository/memory/CouponRepositoryMemory";
 import ItemRepositoryMemory from "../../src/infra/repository/memory/ItemRepositoryMemory";
@@ -16,12 +18,14 @@ import ItemRepositoryMemory from "../../src/infra/repository/memory/ItemReposito
 let connection: Connection;
 let orderRepository: OrderRepository;
 let repositoryFactory: RepositoryFactory;
+let queue: Queue;
 
 beforeEach(async function () {
 	connection = new PgPromiseConnectionAdapter();
 	repositoryFactory = new DatabaseRepositoryFactory(connection);
 	orderRepository = repositoryFactory.createOrderRepository();
 	await orderRepository.clear();
+	queue = new MemoryQueueAdapter();
 });
 
 test("Deve obter uma lista vazia de pedidos", async function () {
@@ -37,7 +41,7 @@ test("Deve obter os pedidos cadastrados", async function () {
 	itemRepository.save(new Item(3, "Cabo", 30, new Dimension(10, 10, 10), 1));
 	const couponRepository = new CouponRepositoryMemory();
 	couponRepository.save(new Coupon("VALE20", 20, new Date("2021-03-10T10:00:00")));
-	const placeOrder = new PlaceOrder(repositoryFactory);
+	const placeOrder = new PlaceOrder(repositoryFactory, queue);
 	const input = {
 		cpf: "935.411.347-80",
 		orderItems: [
@@ -51,9 +55,7 @@ test("Deve obter os pedidos cadastrados", async function () {
 	await placeOrder.execute(input);
 	await placeOrder.execute(input);
 	const getOrders = new GetOrders(repositoryFactory);
-	console.time("getOrders");
 	const output = await getOrders.execute();
-	console.timeEnd("getOrders");
 	expect(output).toHaveLength(2);
 	const [order1, order2] = output;
 	expect(order1.code).toBe("202100000001");
@@ -61,9 +63,7 @@ test("Deve obter os pedidos cadastrados", async function () {
 	expect(order2.code).toBe("202100000002");
 	expect(order2.total).toBe(5132);
 	const getOrdersQuery = new GetOrdersQuery(connection);
-	console.time("getOrdersQuery");
 	const outputQuery = await getOrdersQuery.execute();
-	console.timeEnd("getOrdersQuery");
 });
 
 afterEach(async function () {

@@ -86,6 +86,14 @@ test("Deve fazer um pedido e gerar o código do pedido", async function () {
 	expect(output.code).toBe("202100000001");
 });
 
+function sleep (ms: number) {
+	return new Promise((resolve, reject) => {
+		setTimeout(() => {
+			resolve(true);
+		}, ms);
+	});
+}
+
 test.only("Deve fazer um pedido e lançar no estoque", async function () {
 	new StockController(queue, repositoryFactory);
 	const placeOrder = new PlaceOrder(repositoryFactory, queue);
@@ -98,14 +106,14 @@ test.only("Deve fazer um pedido e lançar no estoque", async function () {
 		]
 	};
 	await placeOrder.execute(input); // delay 200ms
-	// const getStock = new GetStock(repositoryFactory);
-	// const output = await getStock.execute(3);
-	// expect(output.total).toBe(-3);
+	await sleep(200);
+	const getStock = new GetStock(repositoryFactory);
+	const output = await getStock.execute(3);
+	console.log(output);
+	expect(output.total).toBe(-3);
 });
 
 afterEach(async function () {
-	setTimeout(async function () {
-		await queue.close();
-		await connection.close();
-	}, 1000);
+	await queue.close();
+	await connection.close();
 });

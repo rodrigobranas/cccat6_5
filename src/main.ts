@@ -22,4 +22,4 @@ new ItemController(http, itemRepository);
 new OrderController(http, repositoryFactory);
 new StockController(queue, repositoryFactory);
 
-http.listen(3000);
+http.listen(3001);

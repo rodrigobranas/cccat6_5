@@ -105,11 +105,10 @@ test.only("Deve fazer um pedido e lançar no estoque", async function () {
 			{ idItem: 3, quantity: 3 }
 		]
 	};
-	await placeOrder.execute(input); // delay 200ms
+	await placeOrder.execute(input);
 	await sleep(200);
 	const getStock = new GetStock(repositoryFactory);
 	const output = await getStock.execute(3);
-	console.log(output);
 	expect(output.total).toBe(-3);
 });
 

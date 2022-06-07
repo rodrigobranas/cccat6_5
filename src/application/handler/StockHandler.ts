@@ -11,7 +11,6 @@ export default class StockHandler {
 	}
 
 	async handle (orderPlaced: OrderPlaced) {
-		console.log("Handler", orderPlaced);
 		for (const orderItem of orderPlaced.orderItems) {
 			await this.stockEntryRepository.save(new StockEntry(orderItem.idItem, "out", orderItem.quantity));
 		}
